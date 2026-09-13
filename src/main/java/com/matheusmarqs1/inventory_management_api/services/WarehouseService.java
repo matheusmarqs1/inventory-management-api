@@ -4,6 +4,8 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.matheusmarqs1.inventory_management_api.dtos.WarehouseRequestDTO;
+import com.matheusmarqs1.inventory_management_api.dtos.WarehouseResponseDTO;
 import com.matheusmarqs1.inventory_management_api.entities.Warehouse;
 import com.matheusmarqs1.inventory_management_api.exceptions.BusinessException;
 import com.matheusmarqs1.inventory_management_api.exceptions.ResourceNotFoundException;
@@ -35,30 +37,41 @@ public class WarehouseService {
 				
 	}
 	
-	public Warehouse createWarehouse(Warehouse warehouse) {
-		if(warehouseRepository.findByCode(warehouse.getCode()).isPresent()) {
+	public WarehouseResponseDTO createWarehouse(WarehouseRequestDTO warehouseRequestDTO) {
+		if(warehouseRepository.findByCode(warehouseRequestDTO.code()).isPresent()) {
 			throw new BusinessException("Warehouse code already registered");
 		}
-		return warehouseRepository.save(warehouse);
+		
+		Warehouse warehouse = new Warehouse(null, 
+				warehouseRequestDTO.code(),
+				warehouseRequestDTO.name(),
+				warehouseRequestDTO.location(),
+				warehouseRequestDTO.managerName(),
+				warehouseRequestDTO.isActive());
+		
+		Warehouse createdWarehouse = warehouseRepository.save(warehouse);
+		
+		return WarehouseResponseDTO.fromEntity(createdWarehouse);
 	}	
 	
-	public Warehouse updateWarehouse(Long id, Warehouse warehouseReq) {
+	public WarehouseResponseDTO updateWarehouse(Long id, WarehouseRequestDTO warehouseRequestDTO) {
 		Warehouse warehousePersisted = warehouseRepository.findById(id)
 				.orElseThrow(() -> new ResourceNotFoundException("Warehouse with ID: " + id + " not found!"));
 		
-		warehouseRepository.findByCode(warehouseReq.getCode()).ifPresent(existingWarehouse -> {
+		warehouseRepository.findByCode(warehouseRequestDTO.code()).ifPresent(existingWarehouse -> {
 			if(!existingWarehouse.getId().equals(id)) {
 				throw new BusinessException("Warehouse code already registered");
 			}
 		});
 		
-		warehousePersisted.setCode(warehouseReq.getCode());
-		warehousePersisted.setName(warehouseReq.getName());
-		warehousePersisted.setLocation(warehouseReq.getLocation());
-		warehousePersisted.setIsActive(warehouseReq.getIsActive());
-		warehousePersisted.setManagerName(warehouseReq.getManagerName());
+		warehousePersisted.setCode(warehouseRequestDTO.code());
+		warehousePersisted.setName(warehouseRequestDTO.name());
+		warehousePersisted.setLocation(warehouseRequestDTO.location());
+		warehousePersisted.setIsActive(warehouseRequestDTO.isActive());
+		warehousePersisted.setManagerName(warehouseRequestDTO.managerName());
 		
-		return warehouseRepository.save(warehousePersisted);
+		Warehouse updatedWarehouse = warehouseRepository.save(warehousePersisted);
+		return WarehouseResponseDTO.fromEntity(updatedWarehouse);
 	}
 	
 	public void deleteWarehouse(Long id) {

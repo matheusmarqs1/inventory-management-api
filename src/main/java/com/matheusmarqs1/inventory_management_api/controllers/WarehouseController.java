@@ -15,8 +15,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import com.matheusmarqs1.inventory_management_api.dtos.WarehouseRequestDTO;
+import com.matheusmarqs1.inventory_management_api.dtos.WarehouseResponseDTO;
 import com.matheusmarqs1.inventory_management_api.entities.Warehouse;
 import com.matheusmarqs1.inventory_management_api.services.WarehouseService;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping(value = "/warehouses")
@@ -43,16 +47,16 @@ public class WarehouseController {
 	}
 	
 	@PostMapping
-	public ResponseEntity<Warehouse> createWarehouse(@RequestBody Warehouse warehouse){
-		Warehouse createdWarehouse = warehouseService.createWarehouse(warehouse);
-		URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(createdWarehouse.getId()).toUri();
-		return ResponseEntity.created(uri).body(createdWarehouse);
+	public ResponseEntity<WarehouseResponseDTO> createWarehouse(@RequestBody @Valid WarehouseRequestDTO warehouseRequestDTO){
+		WarehouseResponseDTO warehouseResponseDTO = warehouseService.createWarehouse(warehouseRequestDTO);
+		URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(warehouseResponseDTO.id()).toUri();
+		return ResponseEntity.created(uri).body(warehouseResponseDTO);
 	}
 	
 	@PutMapping(value = "/{id}")
-	public ResponseEntity<Warehouse> updateWarehouse(@PathVariable Long id, @RequestBody Warehouse warehouse){
-		Warehouse updatedWarehouse = warehouseService.updateWarehouse(id, warehouse);
-		return ResponseEntity.ok().body(updatedWarehouse);
+	public ResponseEntity<WarehouseResponseDTO> updateWarehouse(@PathVariable Long id, @RequestBody @Valid WarehouseRequestDTO warehouseRequestDTO){
+		WarehouseResponseDTO warehouseResponseDTO = warehouseService.updateWarehouse(id, warehouseRequestDTO);
+		return ResponseEntity.ok().body(warehouseResponseDTO);
 	}
 	
 	@DeleteMapping(value = "/{id}")
